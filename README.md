@@ -1,0 +1,2 @@
+# wc
+Word Count CLI

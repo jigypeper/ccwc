@@ -4,8 +4,12 @@ use clap::{Parser, Args};
 #[derive(Parser)]
 struct Cli {
     /// number of bytes
-    #[arg(short)]
+    #[default_value_t = String::from("All")]
     count: String,
+
+    /// file path
+    #[arg(short)]
+    file: PathBuf,
 }
 
 pub fn arg_handler(args: Vec<String>) {

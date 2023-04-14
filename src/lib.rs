@@ -4,12 +4,34 @@ use clap::{Parser, Args};
 #[derive(Parser)]
 struct Cli {
     /// number of bytes
-    #[default_value_t = String::from("All")]
-    count: String,
+    #[default_value_t = CountOptions::all]
+    count: CountOptions,
 
     /// file path
     #[arg(short)]
     file: PathBuf,
+}
+
+enum CountOptions {
+    /// word count
+    #[args(short)]
+    words,
+
+    /// byte count
+    #[args(short)]
+    bytes,
+
+    /// character count
+    #[args(short)]
+    characters,
+
+    /// line count
+    #[args(short)]
+    lines,
+
+    /// all results
+    #[args(short)]
+    all,
 }
 
 pub fn arg_handler(args: Vec<String>) {

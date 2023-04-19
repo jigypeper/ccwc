@@ -1,15 +1,15 @@
 use std::{path::PathBuf, io::BufReader, fs::File};
 
 use ccwc::{
-    get_env,
     arg_handler,
+    Cli,
 };
 
 use is_terminal::IsTerminal as _;
 
 
 fn main() {
-    let args = get_env();
+    let args = Cli::parse();
     let _stats = arg_handler(args);
 
     let word_count;

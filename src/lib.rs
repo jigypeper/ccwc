@@ -1,70 +1,42 @@
-use std::{io::{stdin, BufRead}, env, fs};
+use std::{io::{stdin, BufRead}, env, fs, path::PathBuf};
 use clap::{Parser, Args};
 
 #[derive(Parser)]
-struct Cli {
+pub struct Cli {
     /// number of bytes
-    #[default_value_t = CountOptions::all]
-    count: CountOptions,
+    #[arg(default_value_t= String::from("all"))]
+    pub count: String,
 
     /// file path
     #[arg(short)]
-    file: PathBuf,
+    pub file: PathBuf,
 }
 
-enum CountOptions {
-    /// word count
-    #[args(short)]
-    words,
+pub fn arg_handler(args: Cli) {
+    let mut file = args.file;
 
-    /// byte count
-    #[args(short)]
-    bytes,
+    if args.count == String::from("all") {
+        file = args.file;
 
-    /// character count
-    #[args(short)]
-    characters,
+        let data = get_stats(args);
 
-    /// line count
-    #[args(short)]
-    lines,
-
-    /// all results
-    #[args(short)]
-    all,
-}
-
-pub fn arg_handler(args: Vec<String>) {
-    let mut file = String::from("");
-
-    if args.len() > 1 {
-        file = args.iter()
-            .next().expect("File does not exist").to_string();
-
-        let data = get_stats(&file);
-
-        println!("{} {} {} {} {}", data.bytes, data.characters, data.words, data.lines, file);
-
-    } else if args.len() > 2 {
-        file = args.iter()
-            .next().expect("File does not exist").to_string();
-
-        let data = get_stats(&file); 
-
-        let data_type = &args.iter()
-            .next().unwrap()[..];
-
-        match data_type {
-            "-c" => println!("{} {}", data.characters, file),
-            "-l" => println!("{} {}", data.lines, file),
-            "-w" => println!("{} {}", data.words, file),
-            "-b" => println!("{} {}", data.bytes, file),
-            _ => println!("Not a valid option")
-        }
+        println!("{} {} {} {} {}", data.bytes, data.characters, data.words, data.lines, file.as_path().as_os_str().to_string_lossy());
 
     } else {
-        let data = get_stats(&stdin().lock().lines().next().unwrap().unwrap()[..]);
-        println!("{} {} {} {} {}", data.bytes, data.characters, data.words, data.lines, file);
+
+        let data = get_stats(args); 
+
+        let data_type = args.count;
+
+        match &data_type[..] {
+            "-c" => println!("{} {}", data.characters, file.as_path().as_os_str().to_string_lossy()),
+            "-l" => println!("{} {}", data.lines, file.as_path().as_os_str().to_string_lossy()),
+            "-w" => println!("{} {}", data.words, file.as_path().as_os_str().to_string_lossy()),
+            "-b" => println!("{} {}", data.bytes, file.as_path().as_os_str().to_string_lossy()),
+            "all" => println!("{} {} {} {} {}", data.bytes, data.characters, data.words, data.lines, file.as_path().as_os_str().to_string_lossy()),
+            _ => println!("invalid option")
+        }
+
     }
     
 }
@@ -77,15 +49,8 @@ pub struct Count {
     pub lines: usize
 }
 
-pub fn get_env() -> Vec<String> {
-    let vars: Vec<String> = env::args()
-        .map(|x| x.trim().to_string())
-        .collect();
-    vars
-}
-
-pub fn get_stats(file_path: &str) -> Count {
-    let data = fs::read_to_string(file_path);
+pub fn get_stats(file_path: Cli) -> Count {
+    let data = fs::read_to_string(file_path.file);
     let mut output = Count {
         bytes: 0,
         characters: 0,
@@ -110,12 +75,19 @@ pub fn get_stats(file_path: &str) -> Count {
 
 #[cfg(test)]
 mod tests {
+    use std::path::PathBuf;
+
     use crate::*;
 
-    #[test]
-    fn test_get_env() {
-        assert_eq!(vec!(std::env::current_exe().unwrap().into_os_string().into_string().unwrap()), get_env());
-    }
+    const file: Cli = Cli {
+        count: String::from("all"),
+        file: PathBuf::from("./README.md")
+    };
+
+    const fake_file: Cli = Cli {
+        count: String::from("all"),
+        file: PathBuf::from("./some_non_existent_file.md")
+    };
 
     #[test]
     fn test_count_valid() {
@@ -126,7 +98,7 @@ mod tests {
             lines: 2
 
         },
-    get_stats("./README.md"));
+    get_stats(file));
     }
 
     #[test]
@@ -138,6 +110,6 @@ mod tests {
             lines: 0
 
         },
-    get_stats("./some_non_existent_file.md"));
+    get_stats(fake_file));
     }
 }

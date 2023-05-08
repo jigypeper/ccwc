@@ -1,27 +1,29 @@
-use std::{path::PathBuf, io::BufReader, fs::File};
+use std::{path::PathBuf};
 
 use ccwc::{
     arg_handler,
     Cli,
 };
 
-use is_terminal::IsTerminal as _;
+use clap::Parser;
+// use is_terminal::IsTerminal as _;
 
 
 fn main() {
     let args = Cli::parse();
-    let _stats = arg_handler(args);
+    // let _stats = arg_handler(args);
 
-    let word_count;
-    let mut file = args.file;
+    let mut file = args.file.clone();
 
     if file == PathBuf::from("-") {
 
         file = PathBuf::from("<stdin>");
-        word_count = words_in_buf_reader(BufReader::new(stdin().lock()));
+        let func_arg = Cli {
+            file: file,
+            ..args
+        };
+        arg_handler(func_arg);
     } else {
-        word_count = words_in_buf_reader(BufReader::new(File::open(&file).unwrap()));
+        arg_handler(args);
     }
-
-    println!("Words from {}: {}", file.to_string_lossy(), word_count)
 }

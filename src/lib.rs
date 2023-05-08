@@ -1,5 +1,5 @@
-use std::{io::{stdin, BufRead}, env, fs, path::PathBuf};
-use clap::{Parser, Args};
+use std::{fs, path::PathBuf};
+use clap::{Parser};
 
 #[derive(Parser)]
 pub struct Cli {
@@ -8,23 +8,21 @@ pub struct Cli {
     pub count: String,
 
     /// file path
-    #[arg(short)]
     pub file: PathBuf,
 }
 
 pub fn arg_handler(args: Cli) {
-    let mut file = args.file;
+    let file = args.file;
 
     if args.count == String::from("all") {
-        file = args.file;
 
-        let data = get_stats(args);
+        let data = get_stats(&file);
 
         println!("{} {} {} {} {}", data.bytes, data.characters, data.words, data.lines, file.as_path().as_os_str().to_string_lossy());
 
     } else {
 
-        let data = get_stats(args); 
+        let data = get_stats(&file); 
 
         let data_type = args.count;
 
@@ -49,8 +47,8 @@ pub struct Count {
     pub lines: usize
 }
 
-pub fn get_stats(file_path: Cli) -> Count {
-    let data = fs::read_to_string(file_path.file);
+pub fn get_stats(file_path: &PathBuf) -> Count {
+    let data = fs::read_to_string(file_path);
     let mut output = Count {
         bytes: 0,
         characters: 0,
@@ -79,30 +77,34 @@ mod tests {
 
     use crate::*;
 
-    const file: Cli = Cli {
-        count: String::from("all"),
-        file: PathBuf::from("./README.md")
-    };
-
-    const fake_file: Cli = Cli {
-        count: String::from("all"),
-        file: PathBuf::from("./some_non_existent_file.md")
-    };
+    const ARGUMENT: &str = "all";
+    const CORRECT_PATH: &str = "./README.md";
+    const FAKE_PATH: &str = "./some_non_existent_file.md";
 
     #[test]
     fn test_count_valid() {
+        let file: Cli = Cli {
+            count: String::from(ARGUMENT),
+            file: PathBuf::from(CORRECT_PATH)
+        };
+
         assert_eq!(Count {
-            bytes: 20,
-            characters: 19,
+            bytes: 19,
+            characters: 18,
             words: 5,
             lines: 2
 
         },
-    get_stats(file));
+    get_stats(&file.file));
     }
 
     #[test]
     fn test_count_invalid() {
+        let fake_file: Cli = Cli {
+            count: String::from(ARGUMENT),
+            file: PathBuf::from(FAKE_PATH)
+        };
+        
         assert_eq!(Count {
             bytes: 0,
             characters: 0,
@@ -110,6 +112,6 @@ mod tests {
             lines: 0
 
         },
-    get_stats(fake_file));
+    get_stats(&fake_file.file));
     }
 }

@@ -3,12 +3,13 @@ use clap::{Parser};
 
 #[derive(Parser)]
 pub struct Cli {
-    /// number of bytes
-    #[arg(default_value_t= String::from("all"))]
-    pub count: String,
 
     /// file path
     pub file: PathBuf,
+    
+    /// number of bytes
+    #[arg(default_value_t= String::from("all"))]
+    pub count: String,
 }
 
 pub fn arg_handler(args: Cli) {

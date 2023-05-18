@@ -1,4 +1,4 @@
-use std::{fs::{self, File}, path::PathBuf, io::{BufRead, BufReader, stdin}};
+use std::{fs::{File}, path::PathBuf, io::{BufRead, BufReader, stdin}};
 use clap::{Parser};
 
 #[derive(Parser)]
@@ -63,8 +63,6 @@ pub fn arg_handler(args: Cli) {
     
         }
     }
-
-    
     
 }
 
@@ -96,18 +94,6 @@ pub fn get_stats<R: BufRead>(buf_reader: R) -> Count {
         words: words,
         lines: lines,
     };
-
-    // match data {
-    //     Ok(contents) => {
-    //         let ref_contents = &contents;
-    //         output.bytes = ref_contents.len();
-    //         output.characters = ref_contents.replace("\n", "").chars().count();
-    //         output.words = ref_contents.split_whitespace().collect::<Vec<&str>>().len();
-    //         output.lines = ref_contents.lines().collect::<Vec<&str>>().len();
-
-    //     },
-    //     Err(_) => eprintln!("Invalid file path")
-    // }
 
     output
 }
